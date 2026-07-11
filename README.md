@@ -45,6 +45,7 @@ Groq API (llama-3.3-70b-versatile)
    ▼
 Rendered in-browser — key points + prioritized action items
 ```
+<img width="1742" height="882" alt="Screenshot (30)" src="https://github.com/user-attachments/assets/f24307d7-7efb-4e94-a56d-af211637d0db" />
 
 There's no backend compute layer. AWS Amplify Hosting serves the static assets; all AI processing happens via a direct client-side API call. The entire stack runs inside AWS's free tier for personal use, with the only external dependency being the AI API call itself.
 
@@ -63,6 +64,7 @@ There's no backend compute layer. AWS Amplify Hosting serves the static assets; 
 4. Results are rendered directly into the UI, grouped into Key Points and Action Items sections.
 
 ---
+<img width="1768" height="865" alt="Screenshot (29)" src="https://github.com/user-attachments/assets/618fc858-7eee-4c1c-9ba6-4542d8df3eef" />
 
 ## Run It Yourself
 
@@ -99,6 +101,7 @@ The main technical challenge was getting consistently parseable output from the 
 - The value of shipping the smallest thing that fully works over a half-finished, more ambitious architecture.
 
 ---
+<img width="1731" height="858" alt="Screenshot (27)" src="https://github.com/user-attachments/assets/204075d8-3a73-49e3-99e2-a2997855924e" />
 
 ## Future Improvements
 
