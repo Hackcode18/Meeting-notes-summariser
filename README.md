@@ -4,8 +4,8 @@ MeetingMind  A serverless AI-powered productivity tool that turns messy meeting 
 
 **AI-powered meeting assistant that turns raw transcripts into structured key points and prioritized action items — built for the AWS Builder Weekend Productivity Challenge.**
 
-🔗 **Live app:** [add your Amplify URL here]
-📄 **Full write-up:** [add your Builder Center article link here]
+🔗 **Live app:** 
+📄 **Full write-up:** 
 
 ---
 
