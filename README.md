@@ -2,8 +2,8 @@
 
 **AI-powered meeting assistant that turns raw transcripts into structured key points and prioritized action items — built for the AWS Builder Weekend Productivity Challenge.**
 
-🔗 **Live app:** [add your Amplify URL here]
-📄 **Full write-up:** [add your Builder Center article link here]
+🔗 **Live app:** (https://hackcode18.github.io/Meeting-notes-summariser/)
+📄 **Full write-up:** https://builder.aws.com/content/3GLnvhSlwiOvsNRkAlCfWgXETd7/weekend-productivity-challenge-meeting-notes-summariser
 
 ---
 
