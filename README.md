@@ -1,330 +1,113 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MeetingMind — Transcript to Action Items</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap');
+# MeetingMind
 
-  * { margin:0; padding:0; box-sizing:border-box; }
+**AI-powered meeting assistant that turns raw transcripts into structured key points and prioritized action items — built for the AWS Builder Weekend Productivity Challenge.**
 
-  body {
-    background: #0B0F14;
-    color: #E4E9ED;
-    font-family: 'Space Grotesk', sans-serif;
-    min-height: 100vh;
-    padding: 40px 20px;
-  }
+🔗 **Live app:** [add your Amplify URL here]
+📄 **Full write-up:** [add your Builder Center article link here]
 
-  .container {
-    max-width: 820px;
-    margin: 0 auto;
-  }
+---
 
-  header {
-    margin-bottom: 32px;
-  }
+## Overview
 
-  .eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    color: #5EEAB4;
-    text-transform: uppercase;
-  }
+Meetings generate a lot of conversation and very little structure. You leave a call knowing roughly what was discussed, but turning that into a clear record of decisions and next steps usually falls to whoever remembers to write it down.
 
-  h1 {
-    font-size: 36px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-top: 8px;
-  }
+MeetingMind closes that gap. Paste in a transcript or rough notes, and in seconds you get back:
 
-  h1 span { color: #5EEAB4; }
+- **Key Points** — a concise summary of what was actually discussed
+- **Action Items** — specific tasks extracted from the conversation
+- **Priority** — high / medium / low, based on urgency and stated deadlines
+- **Reasoning** — a one-line explanation for each priority ranking
 
-  .sub {
-    color: #8A96A3;
-    margin-top: 8px;
-    font-size: 15px;
-  }
+No accounts. No setup. Paste in, structured output out.
 
-  .key-row {
-    margin-top: 24px;
-    display: flex;
-    gap: 8px;
-  }
+---
 
-  input[type="password"], textarea {
-    background: #10161D;
-    border: 1px solid #1F2933;
-    border-radius: 8px;
-    color: #E4E9ED;
-    padding: 12px 14px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    width: 100%;
-  }
+## Features
 
-  textarea {
-    margin-top: 20px;
-    min-height: 220px;
-    resize: vertical;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 14px;
-    line-height: 1.6;
-  }
+- 🤖 AI-powered transcript analysis with visible reasoning per task
+- 🎯 Automatic priority ranking (high / medium / low)
+- 📝 Key-point extraction, separate from action items
+- ⚡ Instant results — a single API call, no backend round trip
+- 🔒 API key stored only in the browser, sent nowhere except directly to the AI provider
+- ☁️ Fully static, serverless architecture
+- 🎨 Framework-free frontend — plain HTML, CSS, and JavaScript, zero build step
 
-  textarea::placeholder { color: #4A5560; }
+---
 
-  button {
-    background: #5EEAB4;
-    color: #0B0F14;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 20px;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    font-family: 'Space Grotesk', sans-serif;
-    white-space: nowrap;
-  }
+## Architecture
 
-  button:hover { opacity: 0.9; }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
+```
+Browser (HTML/CSS/JS on AWS Amplify Hosting)
+   │  Direct HTTPS call
+   ▼
+Groq API (llama-3.3-70b-versatile)
+   │  Structured JSON response
+   ▼
+Rendered in-browser — key points + prioritized action items
+```
 
-  .run-btn {
-    margin-top: 16px;
-    width: 100%;
-    padding: 14px;
-  }
+There's no backend compute layer. AWS Amplify Hosting serves the static assets; all AI processing happens via a direct client-side API call. The entire stack runs inside AWS's free tier for personal use, with the only external dependency being the AI API call itself.
 
-  .save-note {
-    font-size: 11px;
-    color: #4A5560;
-    margin-top: 6px;
-    font-family: 'JetBrains Mono', monospace;
-  }
+| Service | Purpose |
+|---|---|
+| **AWS Amplify Hosting** | Deploys and serves the static frontend directly from GitHub, with automatic builds on push |
+| **Groq API** | Extracts key points and prioritized action items from transcript text |
 
-  #results { margin-top: 32px; }
+---
 
-  .section-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #5A6774;
-    margin: 24px 0 12px;
-  }
+## How It Works
 
-  .point-row, .task-row {
-    background: #10161D;
-    border: 1px solid #1F2933;
-    border-radius: 8px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-  }
+1. User pastes a meeting transcript into the textarea.
+2. On submit, the app sends a single structured prompt to the Groq API, explicitly specifying the expected JSON schema (`key_points` array + `tasks` array, each task with a priority and reasoning field).
+3. The response is defensively parsed — markdown code fences are stripped before `JSON.parse()` runs, since language models occasionally wrap output in explanatory text.
+4. Results are rendered directly into the UI, grouped into Key Points and Action Items sections.
 
-  .prio {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    padding: 4px 9px;
-    border-radius: 100px;
-    text-transform: uppercase;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
+---
 
-  .prio.high { background: rgba(255,107,107,0.15); color: #FF6B6B; }
-  .prio.medium { background: rgba(255,209,102,0.15); color: #FFD166; }
-  .prio.low { background: rgba(94,234,180,0.15); color: #5EEAB4; }
+## Run It Yourself
 
-  .task-text { font-size: 14px; }
-  .task-reason { font-size: 12px; color: #6B7684; margin-top: 3px; }
+1. Clone this repo.
+2. Open `frontend/index.html` directly in a browser — no build step, no dependencies.
+3. Get a free API key at [console.groq.com](https://console.groq.com) (no billing setup required for free-tier usage).
+4. Paste your key into the app and start summarizing transcripts.
 
-  .point-row { font-size: 14px; }
-  .point-row::before {
-    content: "•";
-    color: #5EEAB4;
-    font-weight: 700;
-  }
+### Deploy your own copy on AWS Amplify
 
-  .error {
-    background: rgba(255,107,107,0.1);
-    border: 1px solid rgba(255,107,107,0.3);
-    color: #FF6B6B;
-    padding: 12px 14px;
-    border-radius: 8px;
-    margin-top: 16px;
-    font-size: 13px;
-    font-family: 'JetBrains Mono', monospace;
-  }
+1. Fork this repo.
+2. AWS Console → **Amplify** → **New app** → **Deploy from GitHub**.
+3. Connect your fork. Since the site lives in `frontend/`, set that as the app's root directory in the build settings.
+4. Amplify builds and gives you a live URL in a few minutes.
 
-  .loading {
-    text-align: center;
-    color: #8A96A3;
-    padding: 24px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-  }
+---
 
-  footer {
-    margin-top: 48px;
-    text-align: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: #4A5560;
-  }
-</style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <div class="eyebrow">AWS Builder Weekend Challenge</div>
-      <h1>Meeting<span>Mind</span></h1>
-      <div class="sub">Paste a meeting transcript. Get key points and action items back.</div>
+## Why This Architecture
 
-      <div class="key-row">
-        <input type="password" id="apiKey" placeholder="Paste your Groq API key here">
-      </div>
-      <div class="save-note">Your key is stored only in this browser (localStorage) — never sent anywhere except directly to Groq's API.</div>
-    </header>
+Built to run entirely client-side so it deploys instantly on AWS Amplify with zero backend infrastructure — no Lambda, no API Gateway, no database. This kept the build scoped tightly enough to ship reliably within a weekend timeframe, while still fully satisfying the challenge's AWS-service requirement through Amplify Hosting.
 
-    <textarea id="transcript" placeholder="Paste your meeting transcript or notes here...
+---
 
-Example:
-Sarah: We need the design mockups done by Wednesday.
-Tom: I'll have the backend API ready by Friday.
-Sarah: Let's also loop in marketing about the launch date.
-Tom: I'll send the recap email after this call."></textarea>
+## Challenges
 
-    <button class="run-btn" id="runBtn">Summarize Transcript</button>
+The main technical challenge was getting consistently parseable output from the model — early responses sometimes included explanatory text or markdown fences around the JSON. This was solved with a strict prompt schema plus a defensive stripping step before parsing, rather than relying on the model to always format perfectly on the first try.
 
-    <div id="results"></div>
-  </div>
+---
 
-  <footer>Built with AWS Amplify + Groq API</footer>
+## What I Learned
 
-<script>
-  const keyInput = document.getElementById('apiKey');
-  const transcriptInput = document.getElementById('transcript');
-  const runBtn = document.getElementById('runBtn');
-  const results = document.getElementById('results');
+- Treating an LLM as a structured-data API, not a chat partner — a strict schema plus defensive parsing is the difference between a demo and something that works reliably every time.
+- How much of a time-boxed build can be shaped by infrastructure and account onboarding, not just code — and how to design around that constraint rather than fight it.
+- The value of shipping the smallest thing that fully works over a half-finished, more ambitious architecture.
 
-  // restore saved key
-  const savedKey = localStorage.getItem('groq_api_key');
-  if (savedKey) keyInput.value = savedKey;
+---
 
-  keyInput.addEventListener('change', () => {
-    localStorage.setItem('groq_api_key', keyInput.value);
-  });
+## Future Improvements
 
-  runBtn.addEventListener('click', async () => {
-    const apiKey = keyInput.value.trim();
-    const text = transcriptInput.value.trim();
+- Move the API call behind a lightweight backend (e.g., AWS Lambda) so the API key never touches the client
+- Persist past summaries so users can revisit previous meetings
+- Support direct audio upload with transcription before summarization
+- Export action items to a calendar or task manager
+- Multi-speaker attribution, tagging action items to the person who owns them
 
-    results.innerHTML = '';
+---
 
-    if (!apiKey) {
-      results.innerHTML = '<div class="error">Please enter your Groq API key.</div>';
-      return;
-    }
-    if (!text) {
-      results.innerHTML = '<div class="error">Please paste a transcript first.</div>';
-      return;
-    }
-
-    runBtn.disabled = true;
-    results.innerHTML = '<div class="loading">Analyzing transcript...</div>';
-
-    const prompt = `You are a meeting assistant. Read the transcript below and extract:
-1. Key discussion points (3-6 short bullet points)
-2. Action items with priority and reason
-
-Return ONLY valid JSON, no markdown, no explanation, in this exact format:
-{
-  "key_points": ["point 1", "point 2"],
-  "tasks": [{"task": "short description", "priority": "high|medium|low", "reason": "why this priority"}]
-}
-
-Transcript:
-${text}`;
-
-    try {
-      const response = await fetch(
-        'https://api.groq.com/openai/v1/chat/completions',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [{ role: 'user', content: prompt }],
-            temperature: 0.3
-          })
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error?.message || 'Request failed');
-      }
-
-      let rawText = data.choices[0].message.content.trim();
-      if (rawText.startsWith('```')) {
-        rawText = rawText.split('```')[1];
-        if (rawText.startsWith('json')) rawText = rawText.slice(4);
-      }
-      const parsed = JSON.parse(rawText.trim());
-
-      renderResults(parsed);
-    } catch (err) {
-      results.innerHTML = `<div class="error">Error: ${err.message}</div>`;
-    } finally {
-      runBtn.disabled = false;
-    }
-  });
-
-  function renderResults(data) {
-    let html = '';
-
-    if (data.key_points?.length) {
-      html += '<div class="section-title">Key Points</div>';
-      data.key_points.forEach(p => {
-        html += `<div class="point-row">&nbsp;${escapeHtml(p)}</div>`;
-      });
-    }
-
-    if (data.tasks?.length) {
-      html += '<div class="section-title">Action Items</div>';
-      data.tasks.forEach(t => {
-        html += `
-          <div class="task-row">
-            <span class="prio ${t.priority}">${t.priority}</span>
-            <div>
-              <div class="task-text">${escapeHtml(t.task)}</div>
-              <div class="task-reason">${escapeHtml(t.reason)}</div>
-            </div>
-          </div>`;
-      });
-    }
-
-    results.innerHTML = html || '<div class="error">No results returned. Try a longer transcript.</div>';
-  }
-
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-</script>
-</body>
-</html>
+Built for the AWS Builder Center Weekend Productivity Challenge.
