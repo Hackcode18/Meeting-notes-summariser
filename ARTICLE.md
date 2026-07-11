@@ -101,7 +101,7 @@ Building MeetingMind for the AWS Weekend Productivity Challenge was a good exerc
 
 ## Project Links
 
-**Live application:** [add your Amplify URL here]
-**Source code:** [add your GitHub repo URL here]
+**Live application:** (https://hackcode18.github.io/Meeting-notes-summariser)
+
 
 Thank you for reading!
